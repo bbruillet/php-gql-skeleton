@@ -15,7 +15,7 @@ class CollaboratorMapper
     $entity = new CollaboratorEntity();
     $entity->id = $dbData->id . '';
     $entity->name = $dbData->name;
-    $entity->firstName = $dbData->first_name === null;
+    $entity->firstName = $dbData->first_name;
 
     return $entity;
   }

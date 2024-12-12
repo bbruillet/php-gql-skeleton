@@ -29,23 +29,29 @@ class CollaboratorRepository
   private function fetchByIds(string $tenantId, array $ids)
   {
     return async(function () use ($tenantId, $ids) {
-      $query = $this->getQueryBuilder()
-        ->where(function ($query) use ($tenantId) {
-          $query->where([CollaboratorModel::getTenantColumnName() => $tenantId])
-            ->orWhere(CollaboratorModel::getTenantColumnName(), null);
-        });
-      $query->whereNull('_deleted_at');
-      $query->whereIn(CollaboratorModel::getPkColumnName(), $ids);
+        try {
+            $query = $this->getQueryBuilder()
+                ->where(function ($query) use ($tenantId) {
+                    $query->where([CollaboratorModel::getTenantColumnName() => $tenantId])
+                        ->orWhere(CollaboratorModel::getTenantColumnName(), null);
+                });
+            $query->whereNull('deleted_at');
+            $query->whereIn(CollaboratorModel::getPkColumnName(), $ids);
 
-      $entities = $query->get()->mapWithKeys(function ($row) {
-        $entity = CollaboratorMapper::modelToEntity(CollaboratorModel::fromStdclass($row));
-        return [$entity->id => $entity];
-      });
+            $entities = $query->get()->mapWithKeys(function ($row) {
+                $entity = CollaboratorMapper::modelToEntity(CollaboratorModel::fromStdclass($row));
+                return [$entity->id => $entity];
+            });
 
-      // Map the IDs to the corresponding entities, preserving the order of IDs.
-      return collect($ids)
-        ->map(fn ($id) => $entities->get($id))
-        ->toArray();
+            // Map the IDs to the corresponding entities, preserving the order of IDs.
+            return collect($ids)
+                ->map(fn ($id) => $entities->get($id))
+                ->toArray();
+        }
+    catch (\Exception $e) {
+        error_log($e->getMessage());
+        return [];
+        }
     })();
   }
 
@@ -95,21 +101,21 @@ class CollaboratorRepository
 //     )();
 //   }
 
-  // public function findMany(string $tenantId)
-  // {
-  //   return async(
-  //     fn () => $this->getQueryBuilder()
-  //       ->whereNull('deleted_at')
-  //       ->where(function ($query) use ($tenantId) {
-  //         $query->where(CollaboratorModel::getTenantColumnName(), '=', $tenantId)
-  //           ->orWhereNull(CollaboratorModel::getTenantColumnName());
-  //       })
-  //       ->get()
-  //       ->map(function ($row) {
-  //         return CollaboratorMapper::modelToEntity(CollaboratorModel::fromStdclass($row));
-  //       })
-  //   )();
-  // }
+   public function findMany(string $tenantId)
+   {
+     return async(
+       fn () => $this->getQueryBuilder()
+         ->whereNull('deleted_at')
+         ->where(function ($query) use ($tenantId) {
+           $query->where(CollaboratorModel::getTenantColumnName(), '=', $tenantId)
+             ->orWhereNull(CollaboratorModel::getTenantColumnName());
+         })
+         ->get()
+         ->map(function ($row) {
+           return CollaboratorMapper::modelToEntity(CollaboratorModel::fromStdclass($row));
+         })
+     )();
+   }
 
 //   public function create(CollaboratorMutationData $data, string $tenantId): int|string
 //   {
