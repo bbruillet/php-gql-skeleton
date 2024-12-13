@@ -84,23 +84,6 @@ class CollaboratorRepository
     return $this->getDataloader($tenantId)->load($id);
   }
 
-//   public function countUnitTypeWithLabel(string $name, string $tenantId, string|int|null $excludeId = null)
-//   {
-//     return async(
-//       fn () => $this->getQueryBuilder()
-//         ->where('label', $name)
-//         ->whereNull('deleted_at')
-//         ->where(function ($query) use ($excludeId) {
-//           if (isset($excludeId))
-//             $query->where('id', '!=', $excludeId);
-//         })
-//         ->where(function ($query) use ($tenantId) {
-//           $query->where(UnitTypeModel::getTenantColumnName(), '=', $tenantId)
-//             ->orWhereNull(UnitTypeModel::getTenantColumnName());
-//         })
-//     )();
-//   }
-
    public function findMany(string $tenantId)
    {
      return async(
@@ -116,31 +99,4 @@ class CollaboratorRepository
          })
      )();
    }
-
-//   public function create(CollaboratorMutationData $data, string $tenantId): int|string
-//   {
-//     $newId = $this->getQueryBuilder()->insertGetId(
-//       CollaboratorMapper::serializeCreate($data, $tenantId)
-//     );
-//     return $newId;
-//   }
-
-//   public function update(string $id, CollaboratorMutationData $data)
-//   {
-//     $this->getQueryBuilder()
-//       ->where(CollaboratorModel::getPkColumnName(), $id)
-//       ->update(CollaboratorMapper::serializeUpdate($data));
-
-//     $this->clearCache($id);
-//   }
-
-  private function clearCache(string $id)
-  {
-    foreach ($this->getbyIdsDL as $dl) {
-      if ($dl->key_exists($id)) {
-        $dl->clear($id);
-        return;
-      }
-    }
-  }
 }
